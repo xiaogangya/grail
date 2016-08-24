@@ -34,9 +34,6 @@ module.exports = {
   port: 8080,
   devServer: {
     contentBase: './src'
-  },
-  externals: {
-    'react': 'react'
   }
 }
 
