@@ -19,6 +19,7 @@ class Counter extends React.Component {
 }
 
 window.Counter = Counter;
+window.registerComponent(Counter);
 
 // if (typeof module != 'undefined' && module.exports) {
 //   module.exports = Counter;
