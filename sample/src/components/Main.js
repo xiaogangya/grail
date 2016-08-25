@@ -1,13 +1,13 @@
 import React from 'react';
 
-export default class Counter extends React.Component {
+class Counter extends React.Component {
   constructor() {
     super();
-    this.state = {count: 0};
+    this.state = { count: 0 };
     this.tick = this.tick.bind(this);
   }
   tick() {
-    this.setState({count: this.state.count + 1});
+    this.setState({ count: this.state.count + 1 });
   }
   render() {
     return (
@@ -17,3 +17,12 @@ export default class Counter extends React.Component {
     );
   }
 }
+
+window.Counter = Counter;
+
+// if (typeof module != 'undefined' && module.exports) {
+//   module.exports = Counter;
+// }
+// else if (typeof window != 'undefined') {
+//   window.Counter = Counter;
+// }
