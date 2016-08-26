@@ -18,4 +18,4 @@ class Counter extends React.Component {
   }
 }
 
-window.registerComponent('Counter', Counter);
+window.componentActions.register('Counter', Counter);
