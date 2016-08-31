@@ -3,8 +3,8 @@ var webpack = require('webpack')
 module.exports = {
   entry: {
     index: './src/index.js',
-    pluginCounter: ['./src/components/Counter.js'],
-    pluginRelease: ['./src/components/Release.js']
+    plugin_counter: ['./src/components/Counter.js'],
+    plugin_release: ['./src/components/Release.js']
   },
   output: {
     filename: '[name].js',
