@@ -1,5 +1,4 @@
 import React from 'react';
-import opsApi from '../api/opsApi';
 import githubApi from '../api/githubApi';
 
 class Release extends React.Component {
@@ -7,71 +6,8 @@ class Release extends React.Component {
     super(props);
 
     this.state = {
-      repositories: [],
-
-      docsetOptions: [],
-      localeOptions: [],
-      selectedDocset: null,
       selectedLocales: []
     };
-  }
-
-  componentDidMount() {
-    this.getDocsetOptions().then(function (docsets) {
-      opsApi.getRepositories({ scope: 'op' }).then(function (repositories) {
-        this.setState({
-          repositories: repositories,
-          docsetOptions: docsets,
-          selectedDocset: docsets.length > 0 ? docsets[0] : null
-        });
-      }.bind(this))
-    }.bind(this));
-  }
-
-  componentWillUpdate(nextProps, nextState) {
-    if (nextState.selectedDocset) {
-      nextState.localeOptions = this.getLocaleOptions(nextState.selectedDocset);
-    }
-  }
-
-  getDocsetOptions() {
-    return opsApi.getDocsets({ status: 'created' }).then(data => {
-      var docsets = [];
-
-      data.forEach(docset => {
-        let index = docsets.findIndex(x => {
-          return x.name === docset.name;
-        })
-        if (index == -1) {
-          docsets.push({
-            name: docset.name,
-            items: [docset]
-          })
-        } else {
-          docsets[index].items.push(docset);
-        }
-      });
-
-      return docsets;
-    })
-  }
-
-  getLocaleOptions(docset) {
-    return docset.items.map(x => {
-      return x.locale;
-    })
-  }
-
-  selectDocset(event) {
-    let index = this.state.docsetOptions.findIndex(x => {
-      return x.name === event.target.value;
-    })
-    if (index > -1) {
-      this.state.selectedDocset = this.state.docsetOptions[index];
-      this.setState({
-        selectedDocset: this.state.docsetOptions[index]
-      });
-    }
   }
 
   selectLocales(event) {
@@ -87,25 +23,19 @@ class Release extends React.Component {
   }
 
   merge() {
-    this.state.selectedDocset.items.forEach(item => {
-      if (this.state.selectedLocales.includes(item.locale)) {
-        let repository = this.state.repositories.find(x => {
-          return x.id === item.repository_id;
+    this.props.context.repos.forEach(repo => {
+      if (this.state.selectedLocales.includes(repo.locale)) {
+        console.log(repo)
+
+        githubApi.createPullRequest({
+          owner: repo.account,
+          repo: repo.name,
+          title: `Release from ${this.props.fromBranch} to ${this.props.toBranch}`,
+          head: this.props.fromBranch,
+          base: this.props.toBranch
+        }).then(data => {
+          console.log(data);
         });
-
-        if (repository) {
-          console.log(repository)
-
-          githubApi.createPullRequest({
-            owner: repository.account,
-            repo: repository.name,
-            title: `Release from ${this.props.fromBranch} to ${this.props.toBranch}`,
-            head: this.props.fromBranch,
-            base: this.props.toBranch
-          }).then(data => {
-            console.log(data);
-          });
-        }
       }
     });
   }
@@ -113,32 +43,35 @@ class Release extends React.Component {
   render() {
     return (
       <section className="content">
-        <div className="form-group">
-          <label for="docsetOptions">Select docset</label>
-          <select className="form-control" id="docsetOptions" onChange={ event => this.selectDocset(event) }>
-            {
-              this.state.docsetOptions.map(docset => {
-                return <option key={ docset.name }>{ docset.name }</option>
-              })
-            }
-          </select>
-
-          <label for="localeOptions">Select locales</label>
-          <select multiple className="form-control" id="localeOptions" onChange={ event => this.selectLocales(event) }>
-            {
-              this.state.localeOptions.map(locale => {
-                return <option key={ locale }>{ locale }</option>
-              })
-            }
-          </select>
+        <div className="nav-tabs-custom">
+          <div className="tab-content">
+            <div className="nav-breadcrumb">
+              <ol className="breadcrumb">
+                <li>Release</li>
+              </ol>
+            </div>
+            <div className="box">
+              <div className="form-group">
+                <label for="localeOptions">Select locales</label>
+                <select multiple className="form-control" id="localeOptions" onChange={ event => this.selectLocales(event) }>
+                  {
+                    this.props.context.repos.map(repo => {
+                      return <option key={ repo.locale }>{ repo.locale }</option>
+                    })
+                  }
+                </select>
+              </div>
+              <button onClick={ () => this.merge() }>Release from { this.props.fromBranch } to { this.props.toBranch }</button>
+            </div>
+          </div>
         </div>
-        <button onClick={ () => this.merge() }>Release from { this.props.fromBranch } to { this.props.toBranch }</button>
       </section>
     );
   }
 }
 
 Release.propTypes = {
+  context: React.PropTypes.object.isRequired,
   fromBranch: React.PropTypes.string,
   toBranch: React.PropTypes.string,
   pullRequest: React.PropTypes.bool
@@ -150,4 +83,4 @@ Release.defaultProps = {
   pullRequest: true
 };
 
-window.pluginActions.register('Release', Release);
+window.DocsetPage.register('Release', Release);
