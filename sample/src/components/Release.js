@@ -3,20 +3,20 @@ import githubApi from '../api/githubApi'
 
 export default class Release extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
 
     this.state = {
       selectedLocales: []
-    }
+    };
   }
 
   selectLocales(event) {
-    let options = event.target.options
-    this.state.selectedLocales = []
+    let options = event.target.options;
+    this.state.selectedLocales = [];
     if (options) {
       for (let i = 0; i < options.length; ++i) {
         if (options[i].selected) {
-          this.state.selectedLocales.push(options[i].value)
+          this.state.selectedLocales.push(options[i].value);
         }
       }
     }
@@ -25,7 +25,7 @@ export default class Release extends React.Component {
   merge() {
     this.props.context.repos.forEach(repo => {
       if (this.state.selectedLocales.includes(repo.locale)) {
-        console.log(repo)
+        console.log(repo);
 
         githubApi.createPullRequest({
           owner: repo.account,
@@ -75,12 +75,12 @@ Release.propTypes = {
   fromBranch: React.PropTypes.string,
   toBranch: React.PropTypes.string,
   pullRequest: React.PropTypes.bool
-}
+};
 
 Release.defaultProps = {
   fromBranch: 'master',
   toBranch: 'live',
   pullRequest: true
-}
+};
 
-window.pluginActions.register('DocsetPage', 'Release', Release)
+window.pluginActions.register('DOCSET_PAGE', 'Release', Release);
