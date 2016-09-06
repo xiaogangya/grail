@@ -1,22 +1,22 @@
-import React from 'react';
-import githubApi from '../api/githubApi';
+import React from 'react'
+import githubApi from '../api/githubApi'
 
-class Release extends React.Component {
+export default class Release extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       selectedLocales: []
-    };
+    }
   }
 
   selectLocales(event) {
-    let options = event.target.options;
-    this.state.selectedLocales = [];
+    let options = event.target.options
+    this.state.selectedLocales = []
     if (options) {
       for (let i = 0; i < options.length; ++i) {
         if (options[i].selected) {
-          this.state.selectedLocales.push(options[i].value);
+          this.state.selectedLocales.push(options[i].value)
         }
       }
     }
@@ -34,7 +34,7 @@ class Release extends React.Component {
           head: this.props.fromBranch,
           base: this.props.toBranch
         }).then(data => {
-          console.log(data);
+          console.log(data)
         });
       }
     });
@@ -75,12 +75,12 @@ Release.propTypes = {
   fromBranch: React.PropTypes.string,
   toBranch: React.PropTypes.string,
   pullRequest: React.PropTypes.bool
-};
+}
 
 Release.defaultProps = {
   fromBranch: 'master',
   toBranch: 'live',
   pullRequest: true
-};
+}
 
-window.DocsetPage.register('Release', Release);
+window.pluginActions.register('DocsetPage', 'Release', Release)

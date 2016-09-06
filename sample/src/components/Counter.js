@@ -1,13 +1,13 @@
-import React from 'react';
+import React from 'react'
 
 class Counter extends React.Component {
   constructor() {
-    super();
-    this.state = { count: 0 };
-    this.tick = this.tick.bind(this);
+    super()
+    this.state = { count: 0 }
+    this.tick = this.tick.bind(this)
   }
   tick() {
-    this.setState({ count: this.state.count + 1 });
+    this.setState({ count: this.state.count + 1 })
   }
   render() {
     return (
@@ -18,4 +18,4 @@ class Counter extends React.Component {
   }
 }
 
-window.pluginActions.register('Counter', Counter);
+window.pluginActions.register('Counter', Counter)
