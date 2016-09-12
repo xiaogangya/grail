@@ -11,10 +11,11 @@ module.exports = {
     path: './dist',
     publicPath: '/dist/'
   },
-  externals: {
-    "react-bootstrap-table": "react-bootstrap-table",
-    "react-notification-system": "react-notification-system"
-  },
+  // externals: {
+  //   "react": "React",
+  //   "react-bootstrap-table": "ReactBsTable",
+  //   "react-notification-system": "NotificationSystem"
+  // },
   module: {
     loaders: [
       {
