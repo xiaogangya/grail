@@ -1,5 +1,4 @@
 import React from 'react';
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import githubApi from '../api/githubApi';
 
 export default class Release extends React.Component {
@@ -207,6 +206,9 @@ export default class Release extends React.Component {
   }
 
   render() {
+    var ReactBsTable = require('react-bootstrap-table');
+    var TableHeaderColumn = ReactBsTable.TableHeaderColumn;
+    var BootstrapTable = ReactBsTable.BootstrapTable;
     return (
       <section className="content">
         <div className="box box-default">

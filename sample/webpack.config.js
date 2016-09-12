@@ -1,4 +1,5 @@
 var webpack = require('webpack')
+var path = require('path')
 
 module.exports = {
   entry: {
@@ -11,11 +12,11 @@ module.exports = {
     path: './dist',
     publicPath: '/dist/'
   },
-  // externals: {
-  //   "react": "React",
-  //   "react-bootstrap-table": "ReactBsTable",
-  //   "react-notification-system": "NotificationSystem"
-  // },
+  externals: {
+    "react": "React",
+    "react-bootstrap-table": "ReactBsTable",
+    "react-notification-system": "NotificationSystem"
+  },
   module: {
     loaders: [
       {
@@ -35,11 +36,27 @@ module.exports = {
       "es2015",
       "react"
     ],
-    plugins: ['transform-runtime']
+    plugins: [
+      'transform-runtime'
+    ]
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      React: "React", react: "React", "window.react": "React", "window.React": "React",
+      ReactBsTable: "ReactBsTable", "window.ReactBsTable": "ReactBsTable",
+      "react-bootstrap-table": "ReactBsTable"
+    })
+  ],
   port: 8080,
   devServer: {
     contentBase: './src'
+  },
+  resolve: {
+    extensions: ['', '.js', '.jsx'],
+    alias: {
+        "react": "dummyReact.js",
+        "react-bootstrap-table": "dummyReactBsTable.js"
+    }
   }
 }
 
