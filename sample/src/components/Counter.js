@@ -18,4 +18,4 @@ class Counter extends React.Component {
   }
 }
 
-window.pluginActions.register('Counter', Counter)
+window.pluginActions.register('DOCSET_PAGE', 'Counter', Counter)
