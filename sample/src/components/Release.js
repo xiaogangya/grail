@@ -19,6 +19,7 @@ export default class Release extends React.Component {
         withouthPush: 'Release with pull request'
       }
     };
+    this.notificationSystem = null;
 
     this.selectRowProp = {
       mode: "checkbox",
@@ -32,6 +33,7 @@ export default class Release extends React.Component {
   }
 
   componentDidMount() {
+    this.notificationSystem = this.refs.notificationSystem;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -182,7 +184,24 @@ export default class Release extends React.Component {
       })
     ).then(function () {
       this.refresh(this.props.context.repos, true);
+      this.addNotification({
+        title: 'Release action is completed',
+        message: 'Please wait for updates in the table',
+        level: 'success',
+        position: 'br',
+        autoDismiss: 10
+      });
     }.bind(this));
+  }
+
+  addNotification(options) {
+    this.notificationSystem.addNotification({
+      title: options.title,
+      message: options.message,
+      level: options.level,
+      position: options.position,
+      autoDismiss: options.autoDismiss
+    });
   }
 
   repositoryCellFormat(cell, row) {
@@ -241,6 +260,9 @@ export default class Release extends React.Component {
             </div>
           </div>
           <div className="box-footer">
+            <div>
+              <NotificationSystem ref="notificationSystem" />
+            </div>
           </div>
           {
             this.state.processing ?

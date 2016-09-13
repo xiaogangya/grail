@@ -40,23 +40,9 @@ module.exports = {
       'transform-runtime'
     ]
   },
-  plugins: [
-    new webpack.ProvidePlugin({
-      React: "React", react: "React", "window.react": "React", "window.React": "React",
-      ReactBsTable: "ReactBsTable", "window.ReactBsTable": "ReactBsTable",
-      "react-bootstrap-table": "ReactBsTable"
-    })
-  ],
   port: 8080,
   devServer: {
     contentBase: './src'
-  },
-  resolve: {
-    extensions: ['', '.js', '.jsx'],
-    alias: {
-        "react": "dummyReact.js",
-        "react-bootstrap-table": "dummyReactBsTable.js"
-    }
   }
 }
 

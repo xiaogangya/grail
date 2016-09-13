@@ -9,7 +9,7 @@ class githubApi {
     let base = options.base || 'live';
     let head = options.head || 'master';
     return new Promise((resolve, reject) => {
-      const url = `${this.domain}/github/repos/${owner}/${repo}/compare/${base}...${head}`;
+      const url = `${this.domain}/github/repos/${owner}/${repo}/compare/${base}/${head}`;
       const payload = {
         user: window.userStore.getUser()
       };
