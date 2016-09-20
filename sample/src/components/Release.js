@@ -54,11 +54,14 @@ export default class Release extends React.Component {
 
   componentWillUpdate(nextProps, nextState) {
     if (nextState.details.findIndex(x => x.refresh) >= 0) {
-      this.rows = [];
       this.selectedIndexes = [];
 
+      // keep the sort of rows
+      this.rows = this.rows.filter(x => {
+        return nextState.details.findIndex(y => y.repo.locale === x.locale) >= 0;
+      });
       nextState.details.forEach(detail => {
-        this.rows.push({
+        var data = {
           locale: detail.repo.locale,
           repository: { name: detail.repo.name, url: detail.repo.git_repo_url, detail: detail.repo },
           account: detail.repo.account,
@@ -68,7 +71,16 @@ export default class Release extends React.Component {
             files: detail.diff.files
           },
           pullRequest: detail.pull
+        };
+
+        var index = this.rows.findIndex(x => {
+          return x.locale === detail.repo.locale;
         });
+        if (index >= 0) {
+          this.rows[index] = data;
+        } else {
+          this.rows.push(data);
+        }
       });
     }
   }
@@ -241,7 +253,7 @@ export default class Release extends React.Component {
             <BootstrapTable data={this.rows} selectRow={this.selectRowProp} search={true} searchPlaceholder="Search locale" hover={true} striped={true} condensed={true} ref='table'>
               <TableHeaderColumn dataField="locale" isKey={true} dataSort={true}>Locale</TableHeaderColumn>
               <TableHeaderColumn dataField="repository" dataFormat={this.repositoryCellFormat}>Repository</TableHeaderColumn>
-              <TableHeaderColumn dataField="account">Account</TableHeaderColumn>
+              <TableHeaderColumn dataField="account">Owner</TableHeaderColumn>
               <TableHeaderColumn dataField="diff" dataFormat={this.diffCellFormat}>Different files</TableHeaderColumn>
               <TableHeaderColumn dataField="pullRequest" dataFormat={this.pullRequestCellFormat}>Merge pull request</TableHeaderColumn>
             </BootstrapTable>
