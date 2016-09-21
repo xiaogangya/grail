@@ -15,8 +15,8 @@ class githubApi {
       };
       return fetch(url, {
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'accept': 'application/json',
+          'content-type': 'application/json'
         },
         method: 'post',
         body: JSON.stringify(payload)
@@ -93,10 +93,11 @@ class githubApi {
     let repo = options.repo || null;
     return new Promise((resolve, reject) => {
       const url = `${this.domain}/github/repos/${owner}/${repo}/pulls/create`;
+      const user = window.userStore.getUser();
       const payload = {
-        user: window.userStore.getUser(),
+        user: user,
         options: {
-          title: options.title ? `OPS protal: ${options.title}` : 'OPS portal',
+          title: `${user.name} from OPS portal: ${options.title}`,
           head: options.head || 'master',
           base: options.base || 'live'
         }
@@ -124,10 +125,11 @@ class githubApi {
     let number = options.number || 0;
     return new Promise((resolve, reject) => {
       const url = `${this.domain}/github/repos/${owner}/${repo}/pulls/${number}/update`;
+      const user = window.userStore.getUser();
       const payload = {
-        user: window.userStore.getUser(),
+        user: user,
         options: {
-          title: options.title ? `OPS protal: ${options.title}` : 'OPS portal'
+          title: `${user.name} from OPS portal: ${options.title}`
         }
       };
       return fetch(url, {
