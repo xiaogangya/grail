@@ -1,7 +1,6 @@
 import React from 'react';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import NotificationSystem from 'react-notification-system';
-import githubApi from '../api/githubApi';
 
 const path = require('path');
 

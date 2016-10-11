@@ -25,7 +25,7 @@ class githubApi {
       }).then(data => {
         return resolve(data);
       }).catch(reason => {
-        return {};
+        return resolve({});
       })
     });
   }
@@ -54,7 +54,94 @@ class githubApi {
       }).then(data => {
         return resolve(data);
       }).catch(reason => {
-        return {};
+        return resolve({});
+      })
+    });
+  }
+
+  getRef(options) {
+    let owner = options.owner || null;
+    let repo = options.repo || null;
+    return new Promise((resolve, reject) => {
+      const url = `${this.domain}/github/repos/${owner}/${repo}/refs/get`;
+      const payload = {
+        user: window.userStore.getUser(),
+        options: {
+          ref: options.ref || null
+        }
+      };
+      return fetch(url, {
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        method: 'post',
+        body: JSON.stringify(payload)
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        return resolve(data);
+      }).catch(reason => {
+        return resolve({});
+      })
+    });
+  }
+
+  createRef(options) {
+    let owner = options.owner || null;
+    let repo = options.repo || null;
+    return new Promise((resolve, reject) => {
+      const url = `${this.domain}/github/repos/${owner}/${repo}/refs/create`;
+      const payload = {
+        user: window.userStore.getUser(),
+        options: {
+          ref: options.ref || '',
+          sha: options.sha || ''
+        }
+      };
+      return fetch(url, {
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        method: 'post',
+        body: JSON.stringify(payload)
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        return resolve(data);
+      }).catch(reason => {
+        return resolve({});
+      })
+    });
+  }
+
+  updateRef(options) {
+    let owner = options.owner || null;
+    let repo = options.repo || null;
+    return new Promise((resolve, reject) => {
+      const url = `${this.domain}/github/repos/${owner}/${repo}/refs/update`;
+      const payload = {
+        user: window.userStore.getUser(),
+        options: {
+          ref: options.ref || null,
+          sha: options.sha || '',
+          force: options.force || false
+        }
+      };
+      return fetch(url, {
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        method: 'post',
+        body: JSON.stringify(payload)
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        return resolve(data);
+      }).catch(reason => {
+        return resolve({});
       })
     });
   }
@@ -83,7 +170,7 @@ class githubApi {
       }).then(data => {
         return resolve(data);
       }).catch(reason => {
-        return {};
+        return resolve({});
       })
     });
   }
@@ -114,7 +201,7 @@ class githubApi {
       }).then(data => {
         return resolve(data);
       }).catch(reason => {
-        return {};
+        return resolve({});
       })
     });
   }
@@ -144,7 +231,68 @@ class githubApi {
       }).then(data => {
         return resolve(data);
       }).catch(reason => {
-        return {};
+        return resolve({});
+      })
+    });
+  }
+
+  getContent(options) {
+    let owner = options.owner || null;
+    let repo = options.repo || null;
+    return new Promise((resolve, reject) => {
+      const url = `${this.domain}/github/repos/${owner}/${repo}/contents/get`;
+      const payload = {
+        user: window.userStore.getUser(),
+        options: {
+          path: options.path || '',
+          ref: options.ref || ''
+        }
+      };
+      return fetch(url, {
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        method: 'post',
+        body: JSON.stringify(payload)
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        return resolve(data);
+      }).catch(reason => {
+        return resolve({});
+      })
+    });
+  }
+
+  updateContent(options) {
+    let owner = options.owner || null;
+    let repo = options.repo || null;
+    return new Promise((resolve, reject) => {
+      const url = `${this.domain}/github/repos/${owner}/${repo}/contents/update`;
+      const payload = {
+        user: window.userStore.getUser(),
+        options: {
+          path: options.path || '',
+          message: options.message || '',
+          content: options.content || '',
+          sha: options.sha || '',
+          branch: options.branch || ''
+        }
+      };
+      return fetch(url, {
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        method: 'post',
+        body: JSON.stringify(payload)
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        return resolve(data);
+      }).catch(reason => {
+        return resolve({});
       })
     });
   }
