@@ -4,8 +4,9 @@ var path = require('path')
 module.exports = {
   entry: {
     index: './src/index.js',
-    plugin_counter: ['./src/components/Counter.js'],
-    plugin_release: ['./src/components/Release.js']
+    Counter: ['./src/components/Counter.js'],
+    BranchMerger: ['./src/components/BranchMerger.js'],
+    ConfigMerger: ['./src/components/ConfigMerger.js']
   },
   output: {
     filename: '[name].js',
