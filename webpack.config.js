@@ -14,8 +14,7 @@ module.exports = {
     publicPath: '/dist/'
   },
   externals: {
-    "react": "React",
-    "githubApi": "githubApi",
+    "react": "React"
   },
   module: {
     loaders: [

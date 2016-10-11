@@ -3,6 +3,7 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import NotificationSystem from 'react-notification-system';
 
 const path = require('path');
+const githubApi = window.githubApi;
 
 export default class ConfigMerger extends React.Component {
   constructor(props) {

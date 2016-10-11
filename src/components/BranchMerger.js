@@ -2,6 +2,8 @@ import React from 'react';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import NotificationSystem from 'react-notification-system';
 
+const githubApi = window.githubApi;
+
 export default class BranchMerger extends React.Component {
   constructor(props) {
     super(props);
