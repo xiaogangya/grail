@@ -3,7 +3,6 @@ import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 import NotificationSystem from 'react-notification-system';
 
 const path = require('path');
-const githubApi = window.githubApi;
 
 export default class ConfigMerger extends React.Component {
   constructor(props) {
@@ -53,6 +52,7 @@ export default class ConfigMerger extends React.Component {
         if (same) return;
       }
     }
+
     this.refresh(nextProps.context.repos);
   }
 
@@ -86,6 +86,19 @@ export default class ConfigMerger extends React.Component {
         }
       });
     }
+
+    if (nextProps.context.docset !== this.props.context.docset || nextState.baseLocale !== this.state.baseLocale) {
+      var baseRepo = nextProps.context.repos.find(x => x.locale === nextState.baseLocale);
+      if (baseRepo) {
+        window.opsApi.repository.getGitDocsets(baseRepo.git_repo_url).then(data => {
+          if (data && data.docsets) {
+            // merge settings of docset
+            nextProps.context.docset = Object.assign(nextProps.context.docset, data.docsets.find(x => x.name === nextProps.context.docset.name));
+            nextProps.context.docset.rootPath = nextProps.context.docset.build_source_folder ? nextProps.context.docset.build_source_folder : nextProps.context.docset.build_output_subfolder;
+          }
+        });
+      }
+    }
   }
 
   baseLocaleChange(locale) {
@@ -98,7 +111,7 @@ export default class ConfigMerger extends React.Component {
   }
 
   prepareConfigs(repo) {
-    return githubApi.getRef({
+    return window.githubApi.getRef({
       owner: repo.account,
       repo: repo.name,
       ref: path.join('heads', this.state.fromBranch)
@@ -116,14 +129,14 @@ export default class ConfigMerger extends React.Component {
         });
       }
 
-      return githubApi.getRef({
+      return window.githubApi.getRef({
         owner: repo.account,
         repo: repo.name,
         ref: path.join('heads', this.props.toBranch)
       }).then(data => {
         if (!exist) {
           // create fromBranch based on toBranch if not exist
-          return githubApi.createRef({
+          return window.githubApi.createRef({
             owner: repo.account,
             repo: repo.name,
             ref: path.join('refs/heads', this.state.fromBranch),
@@ -131,7 +144,7 @@ export default class ConfigMerger extends React.Component {
           });
         } else {
           // force update fromBranch
-          return githubApi.updateRef({
+          return window.githubApi.updateRef({
             owner: repo.account,
             repo: repo.name,
             ref: path.join('heads', this.state.fromBranch),
@@ -147,33 +160,36 @@ export default class ConfigMerger extends React.Component {
       }
 
       var getContentPromises = [
-        githubApi.getContent({ owner: baseRepo.account, repo: baseRepo.name, path: this.props.repoConfig, ref: this.props.toBranch }),
-        githubApi.getContent({ owner: baseRepo.account, repo: baseRepo.name, path: path.join(this.props.context.docset.base_path, this.props.docsetConfig), ref: this.props.toBranch }),
-        githubApi.getContent({ owner: repo.account, repo: repo.name, path: this.props.repoConfig, ref: this.state.fromBranch }),
-        githubApi.getContent({ owner: repo.account, repo: repo.name, path: path.join(this.props.context.docset.base_path, this.props.docsetConfig), ref: this.state.fromBranch })
+        window.opsApi.config.merge({ id: baseRepo.id, name: baseRepo.name, url: baseRepo.git_repo_url, branch: this.props.toBranch }, { id: repo.id, name: repo.name, url: baseRepo.git_repo_url, branch: this.state.fromBranch }, this.props.repoConfig),
+        window.opsApi.config.merge({ id: baseRepo.id, name: baseRepo.name, url: baseRepo.git_repo_url, branch: this.props.toBranch }, { id: repo.id, name: repo.name, url: baseRepo.git_repo_url, branch: this.state.fromBranch }, path.join('.', this.props.context.docset.rootPath, this.props.docsetConfig)),
+        window.githubApi.getContent({ owner: repo.account, repo: repo.name, path: this.props.repoConfig, ref: this.state.fromBranch }),
+        window.githubApi.getContent({ owner: repo.account, repo: repo.name, path: path.join(this.props.context.docset.rootPath, this.props.docsetConfig), ref: this.state.fromBranch })
       ];
 
       return Promise.all(getContentPromises).then(data => {
-        var updateContentPromises = [
-          githubApi.updateContent({
+        var updateContentPromises = [];
+        if (window.atob(data[2].content) !== data[0].content) {
+          updateContentPromises.push(window.githubApi.updateContent({
             owner: repo.account,
             repo: repo.name,
             path: this.props.repoConfig,
             message: 'Portal: merge repository config from ' + this.state.baseLocale,
-            content: data[0].content,
+            content: window.btoa(data[0].content),
             sha: data[2].sha,
             branch: this.state.fromBranch
-          }),
-          githubApi.updateContent({
+          }));
+        }
+        if (window.atob(data[3].content) !== data[1].content) {
+          updateContentPromises.push(window.githubApi.updateContent({
             owner: repo.account,
             repo: repo.name,
-            path: path.join(this.props.context.docset.base_path, this.props.docsetConfig),
+            path: path.join(this.props.context.docset.rootPath, this.props.docsetConfig),
             message: 'Portal: merge docset config from ' + this.state.baseLocale,
-            content: data[1].content,
+            content: window.btoa(data[1].content),
             sha: data[3].sha,
             branch: this.state.fromBranch
-          })
-        ];
+          }));
+        }
         return Promise.all(updateContentPromises).then(data => {
           return data;
         });
@@ -182,7 +198,7 @@ export default class ConfigMerger extends React.Component {
   }
 
   compareConfigs(repo) {
-    return githubApi.compareCommits({
+    return window.githubApi.compareCommits({
       owner: repo.account,
       repo: repo.name,
       head: this.state.fromBranch,
@@ -241,7 +257,7 @@ export default class ConfigMerger extends React.Component {
         var repo = detail.repo;
 
         if (this.refs.table.state.selectedRowKeys.includes(repo.locale)) {
-          return githubApi.merge({
+          return window.githubApi.merge({
             owner: repo.account,
             repo: repo.name,
             head: this.state.fromBranch,
@@ -332,7 +348,7 @@ export default class ConfigMerger extends React.Component {
                         <p>Do you confirm to push configuration changes directly?</p>
                       </div>
                       <div className="modal-footer">
-                        <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => this.merge()}>Confirm</button>
+                        <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => this.merge() }>Confirm</button>
                         <button type="button" className="btn btn-default" data-dismiss="modal">Cancel</button>
                       </div>
                     </div>
