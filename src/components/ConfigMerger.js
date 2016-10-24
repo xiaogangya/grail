@@ -9,6 +9,7 @@ export default class ConfigMerger extends React.Component {
     super(props);
 
     this.state = {
+      folderPath: null,
       details: [],
       baseLocale: 'en-us',
       fromBranch: this.props.fromBranchPrefix + 'en-us',
@@ -32,7 +33,15 @@ export default class ConfigMerger extends React.Component {
   }
 
   componentWillMount() {
-    this.refresh(this.props.context.repos);
+    var baseRepo = this.props.context.repos.find(x => x.locale === this.state.baseLocale);
+    if (baseRepo) {
+      this.getfolderPath(this.props.context.docset, baseRepo).then(data => {
+        this.setState({
+          folderPath: data
+        });
+        this.refresh(this.props.context.repos);
+      });
+    }
   }
 
   componentDidMount() {
@@ -53,7 +62,15 @@ export default class ConfigMerger extends React.Component {
       }
     }
 
-    this.refresh(nextProps.context.repos);
+    var baseRepo = nextProps.context.repos.find(x => x.locale === this.state.baseLocale);
+    if (baseRepo) {
+      this.getfolderPath(nextProps.context.docset, baseRepo).then(data => {
+        this.setState({
+          folderPath: data
+        });
+        this.refresh(nextProps.context.repos);
+      });
+    }
   }
 
   componentWillUpdate(nextProps, nextState) {
@@ -90,15 +107,28 @@ export default class ConfigMerger extends React.Component {
     if (nextProps.context.docset !== this.props.context.docset || nextState.baseLocale !== this.state.baseLocale) {
       var baseRepo = nextProps.context.repos.find(x => x.locale === nextState.baseLocale);
       if (baseRepo) {
-        window.opsApi.repository.getGitDocsets(baseRepo.git_repo_url).then(data => {
-          if (data && data.docsets) {
-            // merge settings of docset
-            nextProps.context.docset = Object.assign(nextProps.context.docset, data.docsets.find(x => x.name === nextProps.context.docset.name));
-            nextProps.context.docset.rootPath = nextProps.context.docset.build_source_folder ? nextProps.context.docset.build_source_folder : nextProps.context.docset.build_output_subfolder;
-          }
+        this.getfolderPath(nextProps.context.docset, baseRepo).then(data => {
+          nextState.folderPath = data;
         });
       }
     }
+  }
+
+  getfolderPath(docset, repo) {
+    return window.opsApi.repository.getGitDocsets(repo.git_repo_url).then(data => {
+      if (data && data.docsets) {
+        var temp = data.docsets.find(x => x.name === docset.name);
+        if (temp.build_source_folder) {
+          return temp.build_source_folder;
+        } else if (temp.build_output_subfolder) {
+          return temp.build_output_subfolder;
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    });
   }
 
   baseLocaleChange(locale) {
@@ -161,31 +191,31 @@ export default class ConfigMerger extends React.Component {
 
       var getContentPromises = [
         window.opsApi.config.merge({ id: baseRepo.id, name: baseRepo.name, url: baseRepo.git_repo_url, branch: this.props.toBranch }, { id: repo.id, name: repo.name, url: baseRepo.git_repo_url, branch: this.state.fromBranch }, this.props.repoConfig),
-        window.opsApi.config.merge({ id: baseRepo.id, name: baseRepo.name, url: baseRepo.git_repo_url, branch: this.props.toBranch }, { id: repo.id, name: repo.name, url: baseRepo.git_repo_url, branch: this.state.fromBranch }, path.join('.', this.props.context.docset.rootPath, this.props.docsetConfig)),
+        window.opsApi.config.merge({ id: baseRepo.id, name: baseRepo.name, url: baseRepo.git_repo_url, branch: this.props.toBranch }, { id: repo.id, name: repo.name, url: baseRepo.git_repo_url, branch: this.state.fromBranch }, path.join('.', this.state.folderPath, this.props.docsetConfig)),
         window.githubApi.getContent({ owner: repo.account, repo: repo.name, path: this.props.repoConfig, ref: this.state.fromBranch }),
-        window.githubApi.getContent({ owner: repo.account, repo: repo.name, path: path.join(this.props.context.docset.rootPath, this.props.docsetConfig), ref: this.state.fromBranch })
+        window.githubApi.getContent({ owner: repo.account, repo: repo.name, path: path.join(this.state.folderPath, this.props.docsetConfig), ref: this.state.fromBranch })
       ];
 
       return Promise.all(getContentPromises).then(data => {
         var updateContentPromises = [];
-        if (window.atob(data[2].content) !== data[0].content) {
+        if (decodeURIComponent(escape(window.atob(data[2].content))) !== data[0].content) {
           updateContentPromises.push(window.githubApi.updateContent({
             owner: repo.account,
             repo: repo.name,
             path: this.props.repoConfig,
             message: 'Portal: merge repository config from ' + this.state.baseLocale,
-            content: window.btoa(data[0].content),
+            content: window.btoa(unescape(encodeURIComponent(data[0].content))),
             sha: data[2].sha,
             branch: this.state.fromBranch
           }));
         }
-        if (window.atob(data[3].content) !== data[1].content) {
+        if (decodeURIComponent(escape(window.atob(data[3].content))) !== data[1].content) {
           updateContentPromises.push(window.githubApi.updateContent({
             owner: repo.account,
             repo: repo.name,
-            path: path.join(this.props.context.docset.rootPath, this.props.docsetConfig),
+            path: path.join(this.state.folderPath, this.props.docsetConfig),
             message: 'Portal: merge docset config from ' + this.state.baseLocale,
-            content: window.btoa(data[1].content),
+            content: window.btoa(unescape(encodeURIComponent(data[1].content))),
             sha: data[3].sha,
             branch: this.state.fromBranch
           }));
