@@ -1,6 +1,7 @@
-import React from 'react';
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+
 import NotificationSystem from 'react-notification-system';
+import React from 'react';
 
 const path = require('path');
 
@@ -13,7 +14,7 @@ export default class ConfigMerger extends React.Component {
       details: [],
       baseLocale: 'en-us',
       fromBranch: this.props.fromBranchPrefix + 'en-us',
-      processing: true
+      processing: false
     };
 
     this.rows = [];
@@ -39,7 +40,7 @@ export default class ConfigMerger extends React.Component {
         this.setState({
           folderPath: data
         });
-        this.refresh(this.props.context.repos);
+        //this.refresh(this.props.context.repos);
       });
     }
   }
@@ -62,13 +63,26 @@ export default class ConfigMerger extends React.Component {
       }
     }
 
-    var baseRepo = nextProps.context.repos.find(x => x.locale === this.state.baseLocale);
-    if (baseRepo) {
-      this.getfolderPath(nextProps.context.docset, baseRepo).then(data => {
+    if (nextProps.context.repos && nextProps.context.repos.length > 1) {
+      var baseRepo = nextProps.context.repos.find(x => x.locale === this.state.baseLocale);
+      if (baseRepo) {
         this.setState({
-          folderPath: data
+          processing: true
         });
-        this.refresh(nextProps.context.repos);
+        this.getfolderPath(nextProps.context.docset, baseRepo).then(data => {
+          this.setState({
+            folderPath: data,
+            details: [],
+            processing: false
+          });
+          //this.refresh(nextProps.context.repos);
+        });
+      }
+    }
+    else {
+      this.setState({
+        details: [],
+        processing: false
       });
     }
   }
@@ -340,56 +354,9 @@ export default class ConfigMerger extends React.Component {
             </div>
           </div>
           <div className="box-body">
-            <form>
-              <div className="form-group">
-                <label>From locale</label>
-                <div className="btn-group" style={{ marginLeft: "10px" }}>
-                  <button type="button" className="btn btn-default">{this.state.baseLocale}</button>
-                  <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    <span className="caret"></span>
-                  </button>
-                  <ul className="dropdown-menu" role="menu">
-                    {
-                      this.state.details.map(x => {
-                        return <li key={x.repo.locale}><a onClick={() => this.baseLocaleChange(x.repo.locale) }>{x.repo.locale}</a></li>;
-                      })
-                    }
-                  </ul>
-                </div>
-              </div>
-              <div className="form-group">
-                <label>To locale(s) </label>
-                <BootstrapTable style={{ marginTop: "-20px" }} data={this.rows} selectRow={this.selectRowProp} search={true} searchPlaceholder="Search locale" hover={true} striped={true} condensed={true} ref='table'>
-                  <TableHeaderColumn dataField="locale" isKey={true} dataSort={true}>Locale</TableHeaderColumn>
-                  <TableHeaderColumn dataField="repository" dataFormat={this.repositoryCellFormat}>Repository</TableHeaderColumn>
-                  <TableHeaderColumn dataField="account">Owner</TableHeaderColumn>
-                  <TableHeaderColumn dataField="diff" dataFormat={this.diffCellFormat}>Pull request</TableHeaderColumn>
-                </BootstrapTable>
-              </div>
-              <div className="btn-group" style={{ margin: "5px 5px", float: "right" }}>
-                <button type="button" className="btn btn-default" data-toggle="modal" data-target="#confirmModal">{this.message.button.withPush}</button>
-                <div className="modal fade" id="confirmModal" role="dialog">
-                  <div className="modal-dialog">
-                    <div className="modal-content">
-                      <div className="modal-header">
-                        <h4 className="modal-title">Merge configurations</h4>
-                      </div>
-                      <div className="modal-body">
-                        <p>Do you confirm to push configuration changes directly?</p>
-                      </div>
-                      <div className="modal-footer">
-                        <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => this.merge() }>Confirm</button>
-                        <button type="button" className="btn btn-default" data-dismiss="modal">Cancel</button>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-              <div className="btn-group" style={{ margin: "5px 5px", float: "right" }}>
-                <button type="button" className="btn btn-default" onClick={() => this.refresh(this.props.context.repos, true) }>Refresh table</button>
-              </div>
-            </form>
+            {(!this.props.context.repos || this.props.context.repos.length <= 1)
+              ? "This plugin only works for multi-locale docset"
+              : this.renderBody()}
           </div>
           <div className="box-footer">
             <div>
@@ -406,6 +373,68 @@ export default class ConfigMerger extends React.Component {
         </div>
       </section>
     );
+  }
+
+  renderBody() {
+    return <form>
+      <div className="form-group">
+        <label>From locale</label>
+        <div className="btn-group" style={{ marginLeft: "10px" }}>
+          <button type="button" className="btn btn-default">{this.state.baseLocale}</button>
+          <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span className="caret"></span>
+          </button>
+          <ul className="dropdown-menu" role="menu">
+            {
+              this.state.details.map(x => {
+                return <li key={x.repo.locale}><a onClick={() => this.baseLocaleChange(x.repo.locale)}>{x.repo.locale}</a></li>;
+              })
+            }
+          </ul>
+        </div>
+      </div>
+      <div className="form-group">
+        <label>To locale(s) </label>
+        <BootstrapTable style={{ marginTop: "-20px" }}
+          data={this.rows}
+          selectRow={this.selectRowProp}
+          search={true}
+          searchPlaceholder="Search locale"
+          hover={true}
+          striped={true}
+          condensed={true}
+          ref='table'
+          options={{ noDataText: "Press 'Prepare Diff' button to get diff details" }}>
+          <TableHeaderColumn dataField="locale" isKey={true} dataSort={true}>Locale</TableHeaderColumn>
+          <TableHeaderColumn dataField="repository" dataFormat={this.repositoryCellFormat}>Repository</TableHeaderColumn>
+          <TableHeaderColumn dataField="account">Owner</TableHeaderColumn>
+          <TableHeaderColumn dataField="diff" dataFormat={this.diffCellFormat}>Diff</TableHeaderColumn>
+        </BootstrapTable>
+      </div>
+      <div className="btn-group" style={{ margin: "5px 5px", float: "right" }}>
+        <button type="button" className="btn btn-default" data-toggle="modal" data-target="#confirmModal">{this.message.button.withPush}</button>
+        <div className="modal fade" id="confirmModal" role="dialog">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h4 className="modal-title">Merge configurations</h4>
+              </div>
+              <div className="modal-body">
+                <p>Do you confirm to push configuration changes directly?</p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => this.merge()}>Confirm</button>
+                <button type="button" className="btn btn-default" data-dismiss="modal">Cancel</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div className="btn-group" style={{ margin: "5px 5px", float: "right" }}>
+        <button type="button" className="btn btn-default" onClick={() => this.refresh(this.props.context.repos, true)}>Prepare Diff</button>
+      </div>
+    </form>;
   }
 }
 
