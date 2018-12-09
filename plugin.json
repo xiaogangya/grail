@@ -3,13 +3,13 @@
     {
       "name": "Release",
       "container": "DOCSET_PAGE",
-      "url": "https://rawgit.com/xiaogangya/grail/master/dist/plugin_release.js", 
+      "url": "https://cdn.jsdelivr.net/gh/xiaogangya/grail@master/dist/plugin_release.js", 
       "description": "Release locale repositories from master branch to live branch"
     },
     {
       "name": "Counter",
       "container": "DOCSET_PAGE",
-      "url": "https://rawgit.com/xiaogangya/grail/master/dist/plugin_counter.js", 
+      "url": "https://cdn.jsdelivr.net/gh/xiaogangya/grail@master/dist/plugin_counter.js", 
       "description": "A simple counter"
     }
   ]

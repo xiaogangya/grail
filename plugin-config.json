@@ -2,13 +2,13 @@
   {
     "name": "BranchMerger",
     "container": "DOCSET_PAGE",
-    "url": "https://rawgit.com/xiaogangya/grail/master/dist/BranchMerger.js",
+    "url": "https://cdn.jsdelivr.net/gh/xiaogangya/grail@master/dist/BranchMerger.js",
     "description": "Merge multiple locale repositories from branch master to live."
   },
   {
     "name": "ConfigMerger",
     "container": "DOCSET_PAGE",
-    "url": "https://rawgit.com/xiaogangya/grail/master/dist/ConfigMerger.js",
+    "url": "https://cdn.jsdelivr.net/gh/xiaogangya/grail@master/dist/ConfigMerger.js",
     "description": "Merge configurations from one specific locale repositories to others on master branch."
   }
 ]
